@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1071510691550",
+    "project_id": "gmp-glossary",
+    "storage_bucket": "gmp-glossary.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1071510691550:android:4003260102203f506fec4f",
+        "android_client_info": {
+          "package_name": "com.example.project_glossary"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1071510691550-6heu4tfpdh6alsprm47f2hc96qq4sjao.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPRQsX24LxReBh0PgFZ-xVf9-nsl0w59o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1071510691550-6heu4tfpdh6alsprm47f2hc96qq4sjao.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
