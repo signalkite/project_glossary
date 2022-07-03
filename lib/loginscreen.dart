@@ -3,6 +3,7 @@ import 'package:project_glossary/glossaryScreen.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+
 class LoginScreen extends StatefulWidget {
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -19,8 +20,10 @@ class _LoginScreenState extends State<LoginScreen> {
   String userPassword = '';
 
   void _tryValidation(){
+    //밸리데이션이 통과가 되면 true를 반환한다.
     final isValid = _formkey.currentState!.validate();
     if(isValid){
+      //save()를 호출하면 formkey가 적용된 form내 onSaved 메서드 작동
       _formkey.currentState!.save();
     }
   }
@@ -48,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(
-                    height: 40.0,
+                    height: 40,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -60,19 +63,17 @@ class _LoginScreenState extends State<LoginScreen> {
                               '로그인',
                               style: TextStyle(
                                 fontSize: 20,
-                                color: isSignUpScreen
-                                  ? Colors.black
-                                  : Colors.blueAccent
+                                // color: isSignUpScreen
+                                //   ? Colors.black
+                                //   : Colors.blueAccent
                               ),
                             ),
-                            if(!isSignUpScreen)
                             Container(
-                              // margin: EdgeInsets.only(
-                              //   top: 5
-                              // ),
-                              height: 2,
-                              width: 70,
-                              color: Colors.blueAccent,
+                              height: 3,
+                              width: 56,
+                              color: !isSignUpScreen 
+                                ?Colors.blueAccent
+                                : Colors.white,
                             ),
                           ],
                         ),
@@ -92,16 +93,17 @@ class _LoginScreenState extends State<LoginScreen> {
                               '회원가입',
                               style: TextStyle(
                                 fontSize: 20.0,
-                                color: isSignUpScreen
-                                  ? Colors.blueAccent
-                                  : Colors.black
+                                // color: isSignUpScreen
+                                //   ? Colors.blueAccent
+                                //   : Colors.black
                               ),
                             ),
-                            if(isSignUpScreen)
                             Container(
-                              height: 2,
+                              height: 3,
                               width: 70,
-                              color: Colors.blueAccent,
+                              color: isSignUpScreen 
+                                ? Colors.blueAccent
+                                : Colors.white,
                             )
                           ],
                         ),
@@ -118,17 +120,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   //로그인(Sign In)
                   if(!isSignUpScreen)
                   Container(
-                    padding: EdgeInsets.all(20.0),
+                    padding: EdgeInsets.all(30.0),
                     child: Form(
                       key: _formkey,
                       child: Column(
                         children: [
                           TextFormField(
+                            // autovalidateMode: AutovalidateMode.always,
                             keyboardType: TextInputType.emailAddress,
                             key: ValueKey(1),
                             validator: (value){
                               if(value!.isEmpty || !value.contains('@')){
-                                return 'Please type a valid email address';
+                                return '이메일 주소를 입력해주세요';
                               }
                               return null;
                             },
@@ -149,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderSide: BorderSide(
-                                  color: Colors.redAccent,
+                                  color: Color.fromARGB(255, 22, 12, 12),
                                 ),
                                 borderRadius: BorderRadius.all(
                                   Radius.circular(20),
@@ -203,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     )
                   ),
                   
-                  //Signup
+                  //회원가입(Signup)
                   if(isSignUpScreen)
                   Container(
                     padding: EdgeInsets.all(20.0),
@@ -328,6 +331,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     )
                   ),
+                  
+                  //로그인버튼
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       fixedSize: Size(200, 40),
@@ -336,24 +341,32 @@ class _LoginScreenState extends State<LoginScreen> {
                       ? Text('회원가입 및 로그인')
                       : Text('로그인'),
                     onPressed: () async {
+                      // 로그인 버튼을 누르면 로딩스피너 작동
                       setState(() {
                         showSpinner = true;
                       });
+
+
+                      //회원가입 화면
                       if(isSignUpScreen){
                         _tryValidation();
+                        //밸리데이션이 통과되면 사용자 생성
                         try{
                           final newUser = await _authentication.createUserWithEmailAndPassword(
+                            //textformfield의 onChange매서드를 통해 받은 정보를 전달
                             email: userEmail,
                             password: userPassword
                           );
-
+                          
                           if(newUser.user != null){
+                            // 전달받은 값이 null이 아니라면 Glossary Page로 이동 
                             Navigator.push(
-                              context, 
+                              context,
                               MaterialPageRoute(
                                 builder: (context) => Glossary()
                               )
                             );
+                            // Glossary Page로 이동 즉시 로딩인디케이터 끄기
                             setState(() {
                               showSpinner = false;
                             });
@@ -368,14 +381,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         }
                       }
+
+                      //로그인 화면(회원가입 화면x)
                       if(!isSignUpScreen){
                         _tryValidation();
                         try{
+                          //이메일 및 비밀번호로 로그인
                           final newUser = await _authentication.signInWithEmailAndPassword(
                             email: userEmail,
                             password: userPassword
                           );
-
                           if(newUser.user != null){
                             Navigator.push(
                               context, 
