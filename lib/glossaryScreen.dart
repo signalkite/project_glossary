@@ -15,36 +15,27 @@ class _GlossaryState extends State<Glossary> {
 
   //저장한 단어 리스트
   static List<String> savedWords = [];
-  
+
   int _selectedIndex = 0;
   List _widgetOption = [
     ShowGlossary(savedWords: savedWords),
     Save(savedWords: savedWords),
+    MyAccountScreen(),
   ];
 
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
         title: Text('GMP Glossary'),
         //로그아웃 버튼
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.exit_to_app
-            ),
-            onPressed: (){
-              _authentication.signOut();
-              Navigator.pop(context);
-            }
-          )
-        ],
       ),
       body: Center(
         child: _widgetOption.elementAt(_selectedIndex)
       ),
       bottomNavigationBar: BottomNavigationBar(
+        // showSelectedLabels: false,
+        // showUnselectedLabels: false,
         currentIndex: _selectedIndex,
         onTap: (index){
           setState(() {
@@ -56,11 +47,14 @@ class _GlossaryState extends State<Glossary> {
             icon: Icon(Icons.search),
             label: 'Search',
           ),
-
           BottomNavigationBarItem(
             icon: Icon(Icons.star),
             label: 'Save'
-          )
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Account'
+          ),
         ],
       ),
     );
@@ -92,7 +86,6 @@ class _ShowGlossaryState extends State<ShowGlossary> {
 
   @override
   Widget build(BuildContext context) {
-
     return StreamBuilder(
       stream: queryResult,
       builder: (context, 
@@ -114,8 +107,38 @@ class _ShowGlossaryState extends State<ShowGlossary> {
           itemBuilder: (context, index){
             final alreadySaved = widget.savedWords.contains(docs[index]['text']);
             return ListTile(
-              contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-              title: Text('${docs[index]['text']}'),
+              contentPadding: EdgeInsets.symmetric(
+                vertical: 8, 
+                horizontal: 20
+              ),
+              title: Text(
+                '${docs[index]['text']}',
+                style: TextStyle(
+                  fontSize: 20
+                ),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('this is a definition of word'),
+                  Row(
+                    children: [
+                      Container(
+                        child: Text('FDA'),
+                        color: Colors.blue[100],
+                        padding: EdgeInsets.all(4),
+                        margin: EdgeInsets.fromLTRB(0, 8, 4, 0),
+                      ),
+                      Container(
+                        child: Text('ICH'),
+                        color: Colors.blue[100],
+                        padding: EdgeInsets.all(4),
+                        margin: EdgeInsets.fromLTRB(0, 8, 4, 0),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
               trailing: IconButton(
                 icon: !alreadySaved ? Icon(Icons.star_border) : Icon(Icons.star, color: Colors.amber),
                 onPressed: (){
@@ -136,7 +159,6 @@ class _ShowGlossaryState extends State<ShowGlossary> {
 
 class Save extends StatelessWidget {
   const Save({ this.savedWords, Key? key }) : super(key: key);
-  
   final savedWords;
 
   @override
@@ -150,6 +172,28 @@ class Save extends StatelessWidget {
           title: Text(savedWords[index]),
         );
       }
+    );
+  }
+}
+
+class MyAccountScreen extends StatelessWidget {
+  const MyAccountScreen({ Key? key }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(FirebaseAuth.instance.currentUser!.email!),
+          ElevatedButton(
+            child: Text('로그아웃'),
+            onPressed: (){
+              FirebaseAuth.instance.signOut();
+            }
+          )
+        ],
+      )
     );
   }
 }

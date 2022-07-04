@@ -345,8 +345,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       setState(() {
                         showSpinner = true;
                       });
-
-
                       //회원가입 화면
                       if(isSignUpScreen){
                         _tryValidation();
@@ -357,21 +355,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             email: userEmail,
                             password: userPassword
                           );
-                          
-                          if(newUser.user != null){
-                            // 전달받은 값이 null이 아니라면 Glossary Page로 이동 
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Glossary()
-                              )
-                            );
-                            // Glossary Page로 이동 즉시 로딩인디케이터 끄기
-                            setState(() {
-                              showSpinner = false;
-                            });
-                          }
+                          setState(() {
+                            showSpinner = false;
+                          });
                         } catch(e) {
+                          setState(() {
+                            showSpinner = false;
+                          });
                           print(e);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -391,18 +381,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             email: userEmail,
                             password: userPassword
                           );
-                          if(newUser.user != null){
-                            Navigator.push(
-                              context, 
-                              MaterialPageRoute(
-                                builder: (context) => Glossary()
-                              )
-                            );
-                            setState(() {
-                              showSpinner = false;
-                            });
-                          }
+                          setState(() {
+                            showSpinner = false;
+                          });
                         } catch(e) {
+                          setState(() {
+                            showSpinner = false;
+                          });
                           print(e);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
