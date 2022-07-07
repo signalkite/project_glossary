@@ -12,27 +12,63 @@ class Glossary extends StatefulWidget {
 
 class _GlossaryState extends State<Glossary> {
   final _authentication = FirebaseAuth.instance;
-
-  //저장한 단어 리스트
   static List<String> savedWords = [];
-
   int _selectedIndex = 0;
   List _widgetOption = [
     ShowGlossary(savedWords: savedWords),
     Save(savedWords: savedWords),
-    MyAccountScreen(),
+    MyAccountScreen(savedWord: savedWords),
   ];
+  List _appBarTitleOption = ['GMP Vocabulary', 'Save', 'Account'];
+  bool isSearching = false;
+  String searchingWord = '';
 
   @override
   Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
-        title: Text('GMP Glossary'),
+        
+        // title: Text('GMP Glossary'),
         //로그아웃 버튼
+        leading: IconButton(
+          icon: isSearching ? Icon(Icons.arrow_back) : SizedBox(),
+          onPressed: (){
+            setState(() {
+              isSearching = false;
+            });
+          }
+        ),
+        title: isSearching 
+          ? TextField(
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(14, 0, 14, 0),
+              border: OutlineInputBorder(),
+              hintText: 'Search',
+              filled: true,
+              fillColor: Colors.white,
+            ),
+            onChanged: (value){
+              setState(() {
+                searchingWord = value;
+              });
+            },
+          ) 
+          : Text(_appBarTitleOption[_selectedIndex]),
+        actions: [
+          if(_selectedIndex == 0)
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: (){
+              setState(() {
+                isSearching = true;
+              }
+              );
+            },
+          )
+        ],
       ),
-      body: Center(
-        child: _widgetOption.elementAt(_selectedIndex)
-      ),
+      body: Center(child: _widgetOption.elementAt(_selectedIndex)),
+        // : Center(child: searchResult(searchingWord: searchingWord,)),
       bottomNavigationBar: BottomNavigationBar(
         // showSelectedLabels: false,
         // showUnselectedLabels: false,
@@ -66,12 +102,14 @@ class ShowGlossary extends StatefulWidget {
   State<ShowGlossary> createState() => _ShowGlossaryState();
   const ShowGlossary({this.savedWords, Key? key }) : super(key: key);
     final savedWords;
+    
 }
 
 class _ShowGlossaryState extends State<ShowGlossary> {
 
   var queryResult = FirebaseFirestore.instance.collection('glossary/V1Fdt2Ot7xAMobV16ycl/words').snapshots();
 
+  
   void saveWord(String word){
     setState(() {
       widget.savedWords.add(word.toString());
@@ -83,6 +121,7 @@ class _ShowGlossaryState extends State<ShowGlossary> {
       widget.savedWords.remove(word.toString());
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -108,36 +147,14 @@ class _ShowGlossaryState extends State<ShowGlossary> {
             final alreadySaved = widget.savedWords.contains(docs[index]['text']);
             return ListTile(
               contentPadding: EdgeInsets.symmetric(
-                vertical: 8, 
-                horizontal: 20
+                vertical: 8,
+                horizontal: 20,
               ),
               title: Text(
                 '${docs[index]['text']}',
                 style: TextStyle(
                   fontSize: 20
                 ),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('this is a definition of word'),
-                  Row(
-                    children: [
-                      Container(
-                        child: Text('FDA'),
-                        color: Colors.blue[100],
-                        padding: EdgeInsets.all(4),
-                        margin: EdgeInsets.fromLTRB(0, 8, 4, 0),
-                      ),
-                      Container(
-                        child: Text('ICH'),
-                        color: Colors.blue[100],
-                        padding: EdgeInsets.all(4),
-                        margin: EdgeInsets.fromLTRB(0, 8, 4, 0),
-                      ),
-                    ],
-                  ),
-                ],
               ),
               trailing: IconButton(
                 icon: !alreadySaved ? Icon(Icons.star_border) : Icon(Icons.star, color: Colors.amber),
@@ -157,19 +174,33 @@ class _ShowGlossaryState extends State<ShowGlossary> {
   }
 }
 
-class Save extends StatelessWidget {
-  const Save({ this.savedWords, Key? key }) : super(key: key);
+class Save extends StatefulWidget {
+  const Save({ this.savedWords, this.removeWords, Key? key }) : super(key: key);
   final savedWords;
+  final removeWords;
 
+  @override
+  State<Save> createState() => _SaveState();
+}
+
+class _SaveState extends State<Save> {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-      itemCount: savedWords.length,
+      itemCount: widget.savedWords.length,
       separatorBuilder: (context, index) => Divider(height: 1,),
       itemBuilder: (context, index){
         return ListTile(
           contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-          title: Text(savedWords[index]),
+          title: Text(widget.savedWords[index]),
+          trailing: IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: (){
+              setState(() {
+                widget.savedWords.removeAt(index);
+              });
+            },
+          ),
         );
       }
     );
@@ -177,7 +208,9 @@ class Save extends StatelessWidget {
 }
 
 class MyAccountScreen extends StatelessWidget {
-  const MyAccountScreen({ Key? key }) : super(key: key);
+  const MyAccountScreen({ this.savedWord ,Key? key }) : super(key: key);
+
+  final savedWord;
 
   @override
   Widget build(BuildContext context) {
