@@ -1,58 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:project_glossary/definitionScreen.dart';
+import 'package:project_glossary/definitionView.dart';
 
 class TotalListView extends StatefulWidget {
   @override
   State<TotalListView> createState() => _TotalListViewState();
-  const TotalListView({this.savedWords, Key? key }) : super(key: key);
-    final savedWords;
+
+  // final savedWordDocId;
+  final savedTerms;
+  final savedTermsNumber;
+  final savedTermsIndex;
+
+  const TotalListView({
+    this.savedTerms,
+    this.savedTermsNumber,
+    this.savedTermsIndex,
+    Key? key,
+  }) : super(key: key);
 }
 
 class _TotalListViewState extends State<TotalListView> {
-
-  var queryResult = FirebaseFirestore.instance.collection('glossary').orderBy('Terms').snapshots();
-
-  void saveWord(String word){
-    setState(() {
-      widget.savedWords.add(word.toString());
-    });
-  }
-
-  void removeWord(String word){
-    setState(() {
-      widget.savedWords.remove(word.toString());
-    });
-  }
+  Stream<QuerySnapshot> _glossaryStream = FirebaseFirestore.instance
+      .collection('glossary')
+      .orderBy('Terms')
+      .snapshots();
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: queryResult,
-      builder: (context, 
-      AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapShot){
-        if(snapShot.hasError){
+      stream: _glossaryStream,
+      builder: (context, AsyncSnapshot snapShot) {
+        if (snapShot.hasError) {
           return Text('Something went wrong');
         }
-        
-        if(snapShot.connectionState == ConnectionState.waiting){
+
+        if (snapShot.connectionState == ConnectionState.waiting) {
           return Center(
             child: CircularProgressIndicator(),
           );
         }
-        
         final docs = snapShot.data!.docs;
+
         return ListView.separated(
+          key: PageStorageKey('pageOne'),
           itemCount: docs.length,
-          separatorBuilder: (context, index) => Divider(height: 1,),
-          itemBuilder: (context, index){
-            final alreadySaved = widget.savedWords.contains(docs[index]['Terms']);
+          separatorBuilder: (context, index) => Divider(height: 1),
+          itemBuilder: (context, index) {
+            // final alreadySaved =
+            //     widget.savedWordDocId.contains(docs[index].id);
+            final saved = widget.savedTermsNumber.contains(docs[index]['No']);
             return ListTile(
-              onTap: (){
-                Navigator.push(context, MaterialPageRoute(
-                  builder: (context){
-                    return Definition(tappedItemIndex: index);
-                  }));
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return DefinitionView(
+                        tappedTerm: docs[index]['Terms'],
+                        tappedTermDefinition: docs[index]['Definition'],
+                        tappedTermSource: docs[index]['Source'],
+                      );
+                    },
+                  ),
+                );
               },
               contentPadding: EdgeInsets.symmetric(
                 vertical: 8,
@@ -60,22 +70,36 @@ class _TotalListViewState extends State<TotalListView> {
               ),
               title: Text(
                 '${docs[index]['Terms']}',
-                style: TextStyle(
-                  fontSize: 20
-                ),
+                style: TextStyle(fontSize: 20),
               ),
               trailing: IconButton(
-                icon: !alreadySaved ? Icon(Icons.star_border) : Icon(Icons.star, color: Colors.amber),
-                onPressed: (){
-                  if(alreadySaved){
-                    removeWord(docs[index]['Terms']);
+                icon: !saved
+                    ? Icon(Icons.star_border)
+                    : Icon(Icons.star, color: Colors.amber),
+                onPressed: () {
+                  if (!saved) {
+                    setState(
+                      () {
+                        widget.savedTerms.add(docs[index]['Terms']);
+                        widget.savedTermsNumber.add(docs[index]['No']);
+                        widget.savedTermsIndex.add(index);
+                        print(widget.savedTermsNumber);
+                      },
+                    );
                   } else {
-                    saveWord(docs[index]['Terms']);
+                    setState(
+                      () {
+                        widget.savedTerms.remove(docs[index]['Terms']);
+                        widget.savedTermsNumber.remove(docs[index]['No']);
+                        widget.savedTermsIndex.remove(index);
+                        print(widget.savedTermsNumber);
+                      },
+                    );
                   }
                 },
               ),
             );
-          }
+          },
         );
       },
     );
