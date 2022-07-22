@@ -20,10 +20,13 @@ class _SaveState extends State<SavedTermListView> {
     Stream<QuerySnapshot> _glossaryStream =
         FirebaseFirestore.instance.collection('glossary').orderBy('Terms').snapshots();
 
+    // 즐겨찾기에 등록된 단어가 없을 경우
     if (widget.savedTerms.isEmpty)
       return Center(
         child: Text('즐겨찾기에 등록된 단어가 없습니다.'),
       );
+
+    //즐겨찾기에 등록한 단어가 있을 때
     return StreamBuilder(
       stream: _glossaryStream,
       builder: (context, AsyncSnapshot snapshot) {
